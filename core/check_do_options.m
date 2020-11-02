@@ -10,7 +10,6 @@ else
     disp('++++ Default weighting will be used.');
     disp(['> ',num2str(MP2RAGE.DenoiseWeight)]);
 end
-
 if MP2RAGE.DenoiseUNI == 1
     disp(' ');
     disp('++++ Background denoised UNI will be produced.');
@@ -216,7 +215,43 @@ if isfield(MP2RAGE,'B1correct')==1
         MP2RAGE.filenameT1corrout=[MP2RAGE.filepathUNI,'/','MP2RAGE_corrT1.nii'];
     end
     disp(['> Output file is called : ',MP2RAGE.filenameT1corrout]);
-    save_untouch_nii(MP2RAGEcorr,MP2RAGE.filenameT1corrout);
+    save_untouch_nii(T1corrected,MP2RAGE.filenameT1corrout);
+    
+    %% Check for background removal options
+    if isempty(MP2RAGE.DenoiseWeight)==0
+        disp(' ');
+        disp('++++ Specified weighting will be used.');
+        disp(['> ',num2str(MP2RAGE.DenoiseWeight)]);
+    else
+        MP2RAGE.DenoiseWeight = 10;
+        disp(' ');
+        disp('++++ Default weighting will be used.');
+        disp(['> ',num2str(MP2RAGE.DenoiseWeight)]);
+    end
+    
+    if MP2RAGE.DenoiseUNI == 1
+        disp(' ');
+        disp('++++ Background denoised B1 corrected UNI will be produced.');
+        MP2RAGE.filenameOUT=[MP2RAGE.filenameUNIcorrout(1:end-4),'_clean.nii'];
+        MP2RAGE.filenameIMGOUT=[MP2RAGE.filenameUNIcorrout(1:end-4),'_robust.png'];
+        % Denoise
+        [MP2RAGEimgRobustPhaseSensitive]=RobustCombination(MP2RAGE.filenameUNIcorrout,MP2RAGE,MP2RAGE.DenoiseWeight,1);
+    else
+        disp(' ');
+        disp('++++ Background denoised B1 corrected UNI will not be produced.');
+    end
+    
+    if MP2RAGE.DenoiseT1map == 1
+        disp(' ');
+        disp('++++ Background denoised B1 corrected T1map will be produced.');
+        MP2RAGE.filenameOUT=[MP2RAGE.filenameT1corrout(1:end-4),'_clean.nii'];
+        MP2RAGE.filenameIMGOUT=[MP2RAGE.filenameT1corrout(1:end-4),'_robust.png'];
+        % Denoise
+        [MP2RAGEimgRobustPhaseSensitive]=RobustCombination(MP2RAGE.filenameT1corrout,MP2RAGE,MP2RAGE.DenoiseWeight,1);
+    else
+        disp(' ');
+        disp('++++ Background denoised B1 corrected T1map will not be produced.');
+    end
 else
     disp(' ');
     disp('++++ B1 correction requires a B1 map to be specified.');
